@@ -1,0 +1,4 @@
+
+主要用于测试erlang comet功能， 打算做1M的并发长连接
+
+可以作为mochiweb的典型实例
