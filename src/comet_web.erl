@@ -1,7 +1,7 @@
 %% @author Mochi Media <dev@mochimedia.com>
 %% @copyright 2010 Mochi Media <dev@mochimedia.com>
 
-%% @doc Web server for comet.
+%% @doc 最简单的login, logout, send的使用
 
 -module(comet_web).
 -author("Mochi Media <dev@mochimedia.com>").
@@ -16,7 +16,8 @@ start(Options) ->
     Loop = fun (Req) ->
                    ?MODULE:loop(Req, DocRoot)
            end,
-    mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
+    % we'll set our maximum to 1 million connections. (default: 2048)
+    mochiweb_http:start([{max, 1000000}, {name, ?MODULE}, {loop, Loop} | Options1]).
 
 stop() ->
     mochiweb_http:stop(?MODULE).
@@ -29,8 +30,8 @@ loop(Req, DocRoot) ->
                 case Path of
                     "hello" ->  %get請求 /hello?username=<UserName>
                         hello('GET', Req);
-                    "test/" ++ Id ->
-                        comet_test(Id, Req);
+                    "route/" ++ Id ->
+                        comet_route(Id, Req);
                     _ ->
                         ?P2("~p", [Path]),
                         Req:serve_file(Path, DocRoot)
@@ -57,11 +58,6 @@ loop(Req, DocRoot) ->
                          "request failed, sorry\n"})
     end.
 
-%% Internal API
-
-get_option(Option, Options) ->
-    {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
-
 
 
 hello('GET', Req) ->
@@ -77,28 +73,32 @@ hello('POST', Req) ->
     Req:respond({200, [{"Content-Type", "text/html"}],
                  "Hello " ++ Username ++ "!\n"}).
 
+
 % 测试最基本的comet类型
-comet_test(Id, Req) ->
+comet_route(Id, Req) ->
     Response = Req:ok({"text/html; charset=utf-8",
                        [{"Server","Mochiweb-Test"}],
                        chunked}),
-    Response:write_chunk("Mochiconntest welcomes you! Your Id: " ++ Id ++ "\n"),
-    %% router:login(list_to_atom(Id), self()),
+    % login using an integer rather than a string
+    {IdInt, _} = string:to_integer(Id),
+    comet_router:login(IdInt, self()),
     feed(Response, Id, 1).
 
 
 feed(Response, Path, N) ->
     receive
-         %{router_msg, Msg} ->
-         %    Html = io_lib:format("Recvd msg #~w: '~s'<br/>", [N, Msg]),
-         %    Response:write_chunk(Html);
+         {router_msg, Msg} ->
+             Html = io_lib:format("Recvd msg #~w: '~s'<br/>", [N, Msg]),
+             Response:write_chunk(Html)
     after 10000 ->
             Msg = io_lib:format("Chunk ~w for id ~s\n", [N, Path]),
             Response:write_chunk(Msg)
     end,
     feed(Response, Path, N+1).
 
-
+%% Internal API
+get_option(Option, Options) ->
+    {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
 
 
 %%
