@@ -31,6 +31,7 @@ loop(Req, DocRoot) ->
                     "hello" ->  %get請求 /hello?username=<UserName>
                         hello('GET', Req);
                     "route/" ++ Id ->
+                        ?P2("~p", [Id]),
                         comet_route(Id, Req);
                     _ ->
                         ?P2("~p", [Path]),

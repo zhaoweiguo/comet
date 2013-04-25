@@ -1,6 +1,6 @@
 -module(comet_route).
 -behaviour(gen_server).
--export([start_link/0]).
+-export([start/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
      terminate/2, code_change/3]).
 
@@ -12,7 +12,7 @@
 % 存储两个ets表, 一个是pid到id对应表,另一个是id到pid表
 -record(state, {pid2id, id2pid}).
 
-start_link() ->
+start() ->
     gen_server:start_link({global, ?MODULE}, ?MODULE, [], []).
 
 % sends Msg to anyone logged in as Id

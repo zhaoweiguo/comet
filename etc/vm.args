@@ -1,0 +1,47 @@
+
+## Name of the node
+-name comet@192.168.0.161
+
+## Cookie for distributed erlang
+-setcookie comet
+
+## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
+## (Disabled by default..use with caution!)
+##-heart
+
+## Enable kernel poll and a few async threads
++K true
++A 5
+
+## Increase number of concurrent ports/sockets
+-env ERL_MAX_PORTS 4096
+
+## Tweak GC to run more often
+-env ERL_FULLSWEEP_AFTER 10
+
+## Include .beam files for site.
+-pa ./apps/*/ebin
+
+## Include .beam files for dependencies.
+-pa ./deps/*/ebin
+
+# start the application
+#-s comet
+
+## Run code at startup.
+-eval "application:start(inets)"
+-eval "application:start(crypto)"
+#-eval "application:start(mnesia)"
+#-eval "application:start(cel)"
+-eval "application:start(mochiweb)"
+#-eval "application:start(webmachine)"
+#-eval "application:start(emysql)"
+#-eval "application:start(erldis)"
+-eval "application:start(comet)"
+
+
+
+
+
+
+

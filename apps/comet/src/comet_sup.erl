@@ -42,10 +42,14 @@ upgrade() ->
 %% @doc supervisor callback.
 init([]) ->
     Web = web_specs(comet_web, 7100),
-    Processes = [Web],
+    Route = sup_tpl(comet_route, worker),
+    Processes = [Web, Route],
+%    io:format("~p~n", [Processes]),
     Strategy = {one_for_one, 10, 10},
-    {ok,
-     {Strategy, lists:flatten(Processes)}}.
+    {ok, {Strategy, lists:flatten(Processes)}}.
+
+sup_tpl(Mod, Type) ->
+    {Mod, {Mod, start, []}, permanent, 5000, Type, [Mod]}.
 
 web_specs(Mod, Port) ->
     WebConfig = [{ip, {0,0,0,0}},
